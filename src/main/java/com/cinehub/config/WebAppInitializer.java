@@ -6,8 +6,8 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        // temporarily disable DataConfig while debugging controllers
-        return new Class<?>[] { }; // <-- empty
+        // Load DataConfig (services, repositories, transaction manager) in the root context
+        return new Class<?>[] { DataConfig.class };
     }
 
     @Override

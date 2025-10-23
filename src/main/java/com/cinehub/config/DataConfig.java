@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -19,31 +20,41 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @EnableTransactionManagement
+@EnableJpaRepositories(basePackages = "com.cinehub.repository")
+@ComponentScan(basePackages = { "com.cinehub.service", "com.cinehub.repository" })
+@PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)
 public class DataConfig {
 
     @Autowired
     private Environment env;
 
     @Bean(destroyMethod = "close")
-    public DataSource dataSource() {
+    public HikariDataSource dataSource() {
         HikariConfig cfg = new HikariConfig();
+
+        String jdbcUrl = env.getProperty("JDBC_URL",
+                env.getProperty("jdbc.url",
+                        "jdbc:mysql://mysql-db:3306/cinehub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"));
+        String username = env.getProperty("JDBC_USERNAME", env.getProperty("jdbc.username", "cinehub"));
+        String password = env.getProperty("JDBC_PASSWORD", env.getProperty("jdbc.password", "cinehubpass"));
+
         cfg.setDriverClassName(env.getProperty("JDBC_DRIVER", "com.mysql.cj.jdbc.Driver"));
-        cfg.setJdbcUrl(env.getProperty("JDBC_URL", "jdbc:mysql://mysql-db:3306/cinehub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"));
-        cfg.setUsername(env.getProperty("JDBC_USERNAME", "cinehub"));
-        cfg.setPassword(env.getProperty("JDBC_PASSWORD", "cinehubpass"));
+        cfg.setJdbcUrl(jdbcUrl);
+        cfg.setUsername(username);
+        cfg.setPassword(password);
 
         cfg.setMaximumPoolSize(Integer.parseInt(env.getProperty("HIKARI_MAX_POOL_SIZE", "10")));
         cfg.setMinimumIdle(Integer.parseInt(env.getProperty("HIKARI_MIN_IDLE", "2")));
-        cfg.setPoolName("cinehub-hikari");
+        cfg.setPoolName(env.getProperty("HIKARI_POOL_NAME", "cinehub-hikari"));
 
-        return new HikariDataSource(cfg);²
+        return new HikariDataSource(cfg);
     }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
-        emf.setPackagesToScan("com.cinehub.model"); // keep your entities here
+        emf.setPackagesToScan("com.cinehub.model");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Map<String, Object> jpaProps = new HashMap<>();
@@ -62,6 +73,3 @@ public class DataConfig {
         return tm;
     }
 }
-
-
-//DataConfig contains the JPA/Hibernate configuration (DataSource, EntityManagerFactory, TransactionManager) implemented in Java and created as Spring beans.
