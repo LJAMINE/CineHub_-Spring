@@ -6,8 +6,7 @@ import javax.sql.DataSource;
 import jakarta.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -25,11 +24,11 @@ public class DataConfig {
     @Autowired
     private Environment env;
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public DataSource dataSource() {
         HikariConfig cfg = new HikariConfig();
         cfg.setDriverClassName(env.getProperty("JDBC_DRIVER", "com.mysql.cj.jdbc.Driver"));
-        cfg.setJdbcUrl(env.getProperty("JDBC_URL", "jdbc:mysql://mysql-db:3306/cinehub?useSSL=false&serverTimezone=UTC"));
+        cfg.setJdbcUrl(env.getProperty("JDBC_URL", "jdbc:mysql://mysql-db:3306/cinehub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"));
         cfg.setUsername(env.getProperty("JDBC_USERNAME", "cinehub"));
         cfg.setPassword(env.getProperty("JDBC_PASSWORD", "cinehubpass"));
 
@@ -37,14 +36,14 @@ public class DataConfig {
         cfg.setMinimumIdle(Integer.parseInt(env.getProperty("HIKARI_MIN_IDLE", "2")));
         cfg.setPoolName("cinehub-hikari");
 
-        return new HikariDataSource(cfg);
+        return new HikariDataSource(cfg);²
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
-        emf.setDataSource(dataSource());
-        emf.setPackagesToScan("com.cinehub.model"); // adjust if needed
+        emf.setDataSource(dataSource);
+        emf.setPackagesToScan("com.cinehub.model"); // keep your entities here
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Map<String, Object> jpaProps = new HashMap<>();
@@ -63,3 +62,6 @@ public class DataConfig {
         return tm;
     }
 }
+
+
+//DataConfig contains the JPA/Hibernate configuration (DataSource, EntityManagerFactory, TransactionManager) implemented in Java and created as Spring beans.
