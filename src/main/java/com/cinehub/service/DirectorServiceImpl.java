@@ -27,6 +27,7 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director update(Long id, Director director) {
+
         Director existing = directorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Director not found with id: " + id));
         existing.setFirstName(director.getFirstName());

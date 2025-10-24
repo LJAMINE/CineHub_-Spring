@@ -47,6 +47,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+
     public ResponseEntity<CategoryDto> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest req) {
         Category existing = categoryService.findById(id);
         EntityDtoMapper.updateCategoryFromRequest(existing, req);

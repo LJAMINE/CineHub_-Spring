@@ -8,9 +8,9 @@ import java.time.format.DateTimeParseException;
 
 public final class EntityDtoMapper {
 
-    private EntityDtoMapper() {}
+    private EntityDtoMapper() {
+    }
 
-    // Film mapping already present in your project (kept)
     public static com.cinehub.dto.FilmDto toFilmDto(Film f) {
         if (f == null) return null;
         com.cinehub.dto.FilmDto dto = new com.cinehub.dto.FilmDto();
@@ -29,6 +29,56 @@ public final class EntityDtoMapper {
             dto.setCategoryName(f.getCategory().getName());
         }
         return dto;
+    }
+
+
+    public static Film fromFilmRequest(FilmRequest req) {
+        if (req == null) return null;
+        Film f = new Film();
+        f.setTitle(req.getTitle());
+        f.setReleaseYear(req.getReleaseYear());
+        f.setRating(req.getRating());
+        f.setSynopsis(req.getSynopsis());
+        f.setDuration(req.getDuration());
+
+        if (req.getDirectorId() != null) {
+            Director d = new Director();
+            d.setIdDirector(req.getDirectorId());
+            f.setDirector(d);
+        }
+
+        if (req.getCategoryId() != null) {
+            Category c = new Category();
+            c.setIdCategory(req.getCategoryId());
+            f.setCategory(c);
+        }
+        return f;
+    }
+
+    public static void updateFilmFromRequest(Film existing, FilmRequest req) {
+        if (existing == null || req == null) return;
+        existing.setTitle(req.getTitle());
+        existing.setReleaseYear(req.getReleaseYear());
+        existing.setRating(req.getRating());
+        existing.setSynopsis(req.getSynopsis());
+        existing.setDuration(req.getDuration());
+
+        if (req.getDirectorId() != null) {
+            Director d = new Director();
+            d.setIdDirector(req.getDirectorId());
+            existing.setDirector(d);
+        } else {
+            existing.setDirector(null);
+        }
+
+         if (req.getCategoryId() != null) {
+            Category c = new Category();
+            c.setIdCategory(req.getCategoryId());
+            existing.setCategory(c);
+        } else {
+            existing.setCategory(null);
+        }
+
     }
 
     public static DirectorDto toDirectorDto(Director d) {
@@ -88,7 +138,8 @@ public final class EntityDtoMapper {
         if (req.getBirthDate() != null) {
             try {
                 existing.setBirthDate(LocalDate.parse(req.getBirthDate()));
-            } catch (DateTimeParseException ignored) {}
+            } catch (DateTimeParseException ignored) {
+            }
         }
     }
 
